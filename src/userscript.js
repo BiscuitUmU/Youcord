@@ -5,7 +5,7 @@
 // @author Biscuit
 // @match *://www.youtube.com/*
 // @require https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js
-// @icon https://raw.githubusercontent.com/AcedArmy/Youcord/master/images/userscript-icon.jpg?raw=true
+// @icon https://raw.githubusercontent.com/AcedArmy/Youcord/master/images/userscirpt-icon.png?raw=true
 // ==/UserScript==
 
 window.biscuit = {};
