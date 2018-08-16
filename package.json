@@ -1,0 +1,31 @@
+{
+  "dependencies": {
+    "discord-rich-presence": "^0.0.7",
+    "moment": "^2.22.2",
+    "socket.io": "^2.1.1"
+  },
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "name": "youcord",
+  "version": "1.0.0",
+  "description": "A Youtube Rich Presence for Discord",
+  "main": "src/server.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AcedArmy/youcord.git"
+  },
+  "keywords": [
+    "discord",
+    "youtube",
+    "rich",
+    "presence"
+  ],
+  "author": "Biscuit",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AcedArmy/youcord/issues"
+  },
+  "homepage": "https://github.com/AcedArmy/youcord#readme"
+}
