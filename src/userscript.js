@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name Youtube Discord RPC
+// @name Youcord Discord RPC
 // @namespace https://owo.icu
 // @grant none
 // @author Biscuit
 // @match *://www.youtube.com/*
 // @require https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js
-// @icon https://raw.githubusercontent.com/AcedArmy/Youcord/master/images/userscript-icon.jpg
+// @icon https://raw.githubusercontent.com/AcedArmy/Youcord/master/images/userscript-icon.jpg?raw=true
 // ==/UserScript==
 
 window.biscuit = {};

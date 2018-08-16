@@ -13,4 +13,5 @@ A YouTube Discord Rich Presence made in Javascript
 - Open **RUN.bat**
 
 ## Issues
+- Might not work on other browsers other then Chrome due to User Script (Needs checking)
 - There might be some issues grabbing certain elements from the browser. If you find any make a bug report and link the video you have having problems with.
