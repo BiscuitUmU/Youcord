@@ -5,8 +5,8 @@ A YouTube Discord Rich Presence made in Javascript
 ![Preview](https://raw.githubusercontent.com/AcedArmy/Youcord/master/images/preview.jpg)
 
 ## Installation
-- Download **Violentmoney** from https://violentmonkey.github.io/get-it
-- Install the **Youcord Userscript** from https://raw.githubusercontent.com/AcedArmy/Youcord/master/src/userscript.js
+- Download **Violentmonkey** from https://violentmonkey.github.io/get-it
+- Install the **Youcord Userscript** from https://raw.githubusercontent.com/AcedArmy/Youcord/master/src/userscript.user.js
 - Download **Node.js LTS** from https://nodejs.org/en
 - Download and **Unzip the Server Code** from https://github.com/AcedArmy/Youcord/archive/master.zip
 - Open **INSTALL.bat**
