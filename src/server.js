@@ -17,19 +17,15 @@ function richStateUpdate(setState) {
 
 io.on("connection", async function (socket) {
     console.log(socket.handshake.address.split(":")[3] + " connected to the server");
-    client.updatePresence({
-        details: 'Running Youcord',
-        state: 'Browsing Youtube',
-        largeImageKey: 'youtube'
-    });
+    richStateUpdate("Browsing Youtube");
 
     socket.on("state_update", async function (now) {
         if (now != remember_me_state) {
-            
+
             remember_me_state = now
             var splitState = now.pathname.split('/');
 
-            if (splitState[splitState.length - 2] == 'feed') {
+            if (splitState[splitState.length - 2] == 'feed' || splitState[splitState.length - 2] == 'user') {
                 return richStateUpdate('Browsing ' + splitState[splitState.length - 1]);
             } else {
                 return richStateUpdate('Browsing YouTube');
@@ -39,7 +35,7 @@ io.on("connection", async function (socket) {
 
     socket.on("video_update", async function (now) {
 
-        if (now.title !== remember_me_video.title || now.video_state !== remember_me_video.video_state) {
+        if (now.title !== remember_me_video.title || now.video_state !== remember_me_video.video_state || now.current_playback_time !== remember_me_video.current_playback_time) {
 
             remember_me_video = now;
 
@@ -55,7 +51,7 @@ io.on("connection", async function (socket) {
                     .add(left[1], "s")
                     .unix() : null;
 
-                console.log("RPUpdate: " + now.title + ' | ' + now.uploader + " | " + (now.video_state == "Pause") ? "Playing" : "Paused");
+                console.log(`RPUpdate: ${now.title} | ${now.uploader} | ${(now.video_state == "Pause") ? "Playing" : "Paused"} | ${now.current_playback_time}`)
 
                 return client.updatePresence({
                     details: '📺 ' + now.title,
@@ -64,9 +60,8 @@ io.on("connection", async function (socket) {
                     endTimestamp: end,
                     largeImageKey: 'youtube',
                     smallImageKey: (now.video_state == "Play") ? "pause" : undefined,
-                    smallImageText: (now.video_state == "Play") ? "Idle" : undefined,
-                    largeImageText: now.views.split(' ')[0] + ' 👀 | ' + now.likes + ' 👍 | ' + now.dislikes + ' 👎',
-                    instance: false,
+                    smallImageText: (now.video_state == "Play") ? "Video Paused" : undefined,
+                    largeImageText: now.views.split(' ')[0] + ' 👀 | ' + now.likes + ' 👍 | ' + now.dislikes + ' 👎'
                 });
             } catch (err) { console.log(err); };
         }
