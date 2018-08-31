@@ -25,7 +25,7 @@ window.biscuit.socket.on("connect", async function () {
     window.biscuit.interval = window.setInterval(async function () {
         try {
             var video_update = {
-                title: document.getElementsByClassName("style-scope ytd-video-primary-info-renderer")[4].textContent,
+                title: document.getElementsByClassName("style-scope ytd-video-primary-info-renderer")[5].textContent,
                 uploader: await findCorrectUploaderElement('yt-simple-endpoint style-scope yt-formatted-string'),
                 views: document.getElementsByClassName("view-count style-scope yt-view-count-renderer")[0].textContent,
                 likes: document.getElementsByClassName("style-scope ytd-toggle-button-renderer style-text")[1].textContent,

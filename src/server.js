@@ -1,18 +1,30 @@
-const client = require('discord-rich-presence')('479682964859519018');
 const server = require("http").createServer();
 const io = require("socket.io")(server);
 const moment = require("moment");
 const port = 13701;
 
+var client = null
+
 var remember_me_video = {}
 var remember_me_state = {}
+var discord_rp_conn_state = false
 
 function richStateUpdate(setState) {
-    client.updatePresence({
-        details: 'Running Youcord',
-        state: setState,
-        largeImageKey: 'youtube'
-    });
+    if (setState) {
+        if (!discord_rp_conn_state) {
+            //NOTE: This is a hack to make discord rp reconnect. There might be a better way to do this
+            client = require('discord-rich-presence')('479682964859519018');
+            discord_rp_conn_state = true
+        }
+        client.updatePresence({
+            details: 'Running Youcord',
+            state: setState,
+            largeImageKey: 'youtube'
+        });
+    } else {
+        client.disconnect();
+        discord_rp_conn_state = false
+    }
 }
 
 io.on("connection", async function (socket) {
@@ -69,11 +81,10 @@ io.on("connection", async function (socket) {
 
     socket.on("disconnect", function () {
         console.log(socket.handshake.address.split(":")[3] + " disconnected from the server");
-        return richStateUpdate('Not on YouTube');
+        return richStateUpdate(null);
     });
 });
 
 server.listen(port, function () {
     console.log("WebSocket server started on port: " + port);
-    return richStateUpdate('Not on YouTube');
 });
