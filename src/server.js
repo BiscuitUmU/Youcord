@@ -1,12 +1,23 @@
 const server = require("http").createServer();
 const io = require("socket.io")(server);
 const moment = require("moment");
+const fetch = require("node-fetch")
 const port = 13701;
+
+const Cats = {
+    Music: {
+        icon: '🎵'
+    },
+    Other: {
+        icon: '📺'
+    }
+}
 
 var client = null
 
 var remember_me_video = {}
 var remember_me_state = {}
+var remember_me_playback = {}
 var discord_rp_conn_state = false
 
 function richStateUpdate(setState) {
@@ -27,11 +38,44 @@ function richStateUpdate(setState) {
     }
 }
 
+function richPresenceUpdate(ytd, ps) {
+
+    let left = [
+        parseInt(ps.max_playback_time.split(":")[0]) - parseInt(ps.current_playback_time.split(":")[0]),
+        parseInt(ps.max_playback_time.split(":")[1]) - parseInt(ps.current_playback_time.split(":")[1])
+    ];
+
+    let start = (ps.video_state == "Pause" && !ps.isLive) ? moment().unix() : null;
+    let end = (ps.video_state == "Pause" && !ps.isLive) ? moment()
+        .add(left[0], "m")
+        .add(left[1], "s")
+        .unix() : null;
+
+    client.updatePresence({
+        details: getCatIcon(ytd.category) + ' ' + ytd.title,
+        state: '👤 ' + ytd.uploader,
+        startTimestamp: start,
+        endTimestamp: end,
+        largeImageKey: (ps.hostname !== 'gaming.youtube.com') ? 'youtube' : 'youtube-gaming',
+        smallImageKey: (ps.video_state == "Play") ? "pause" : undefined,
+        smallImageText: (ps.video_state == "Play") ? "Video Paused" : undefined,
+        largeImageText: ytd.views + ' 👀 | ' + ytd.likes + ' 👍 | ' + ytd.dislikes + ' 👎'
+
+    });
+
+    console.log(`RPUpdate: ${ytd.title} | ${ytd.uploader} | ${ytd.category} | ${(ps.video_state == "Pause") ? "Playing" : "Paused"} | ${ps.current_playback_time}`)
+}
+
+function getCatIcon(name) {
+    if (name === 'Music') return Cats.Music.icon
+    return Cats.Other.icon
+}
+
 io.on("connection", async function (socket) {
     console.log(socket.handshake.address.split(":")[3] + " connected to the server");
     richStateUpdate("Browsing Youtube");
 
-    socket.on("state_update", async function (now) {
+    socket.on("path_update", async function (now) {
         if (now != remember_me_state) {
 
             remember_me_state = now
@@ -47,34 +91,44 @@ io.on("connection", async function (socket) {
 
     socket.on("video_update", async function (now) {
 
-        if (now.title !== remember_me_video.title || now.video_state !== remember_me_video.video_state || now.current_playback_time !== remember_me_video.current_playback_time) {
-
-            remember_me_video = now;
+        if (now.id !== remember_me_playback.id || now.video_state !== remember_me_playback.video_state || now.current_playback_time !== remember_me_playback.current_playback_time) {
 
             try {
-                let left = [
-                    parseInt(now.max_playback_time.split(":")[0]) - parseInt(now.current_playback_time.split(":")[0]),
-                    parseInt(now.max_playback_time.split(":")[1]) - parseInt(now.current_playback_time.split(":")[1])
-                ];
 
-                let start = (now.video_state == "Pause") ? moment().unix() : null;
-                let end = (now.video_state == "Pause") ? moment()
-                    .add(left[0], "m")
-                    .add(left[1], "s")
-                    .unix() : null;
+                var rmv = remember_me_video
 
-                console.log(`RPUpdate: ${now.title} | ${now.uploader} | ${(now.video_state == "Pause") ? "Playing" : "Paused"} | ${now.current_playback_time}`)
+                if (now.id !== remember_me_playback.id) {
+                    remember_me_playback = now
+                    var ytr = { title: null, uploader: null, likes: null, dislikes: null, views: null, category: null }
+                    fetch(`https://www.youtube.com/watch?pbj=1&v=${now.id}`, {
+                        headers: {
+                            'x-youtube-client-name': '1',
+                            'x-youtube-client-version': '2.20180905'
+                        }
+                    })
+                        .then(function (response) {
+                            return response.json();
+                        })
+                        .then(function (jsd) {
+                            ytr.title = jsd[2].player.args.title
+                            ytr.uploader = jsd[2].player.args.author
+                            ytr.likes = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[0].videoPrimaryInfoRenderer.sentimentBar.sentimentBarRenderer.tooltip.split(' / ')[0]
+                            ytr.dislikes = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[0].videoPrimaryInfoRenderer.sentimentBar.sentimentBarRenderer.tooltip.split(' / ')[1]
+                            ytr.views = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[0].videoPrimaryInfoRenderer.viewCount.videoViewCountRenderer.viewCount.simpleText.split(' ')[0]
+                            try {
+                                ytr.category = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[1].videoSecondaryInfoRenderer.metadataRowContainer.metadataRowContainerRenderer.rows[1].metadataRowRenderer.contents[0].runs[0].text
+                            } catch (e) {
+                                ytr.category = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[1].videoSecondaryInfoRenderer.metadataRowContainer.metadataRowContainerRenderer.rows[0].metadataRowRenderer.contents[0].runs[0].text
+                            }
 
-                return client.updatePresence({
-                    details: '📺 ' + now.title,
-                    state: '👤 ' + now.uploader,
-                    startTimestamp: start,
-                    endTimestamp: end,
-                    largeImageKey: 'youtube',
-                    smallImageKey: (now.video_state == "Play") ? "pause" : undefined,
-                    smallImageText: (now.video_state == "Play") ? "Video Paused" : undefined,
-                    largeImageText: now.views.split(' ')[0] + ' 👀 | ' + now.likes + ' 👍 | ' + now.dislikes + ' 👎'
-                });
+                            remember_me_video = ytr;
+                            return richPresenceUpdate(ytr, now)
+                        });
+
+                } else {
+                    remember_me_playback = now;
+                    return richPresenceUpdate(rmv, now)
+                }
             } catch (err) { console.log(err); };
         }
     });
