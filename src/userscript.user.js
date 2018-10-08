@@ -45,7 +45,6 @@ window.biscuit.socket.on("connect", async function () {
             return doVideoUpdate(video_update)
 
         } catch (err) {
-
             var path_update = {
                 pathname: window.location.pathname,
                 hostname: window.location.hostname
