@@ -26,19 +26,38 @@ exports.getVideoInfo = async function (videoId) {
         .then(function (jsd) {
             ytr.title = jsd[2].player.args.title
             ytr.uploader = jsd[2].player.args.author
-            ytr.likes = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[0].videoPrimaryInfoRenderer.sentimentBar.sentimentBarRenderer.tooltip.split(' / ')[0]
-            ytr.dislikes = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[0].videoPrimaryInfoRenderer.sentimentBar.sentimentBarRenderer.tooltip.split(' / ')[1]
             try{
-                ytr.views = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[0].videoPrimaryInfoRenderer.viewCount.videoViewCountRenderer.viewCount.simpleText.split(' ')[0]
-            }catch (e) {//If it's an Youtube Original there haven't view count
-                ytr.views = ''
+                ytr.likes = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[0].videoPrimaryInfoRenderer.sentimentBar.sentimentBarRenderer.tooltip.split(' / ')[0]
+                ytr.dislikes = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[0].videoPrimaryInfoRenderer.sentimentBar.sentimentBarRenderer.tooltip.split(' / ')[1]  
+            }
+            catch(e) {
+            	ytr.likes = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[1].videoPrimaryInfoRenderer.sentimentBar.sentimentBarRenderer.tooltip.split(' / ')[0]
+            	ytr.dislikes = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[1].videoPrimaryInfoRenderer.sentimentBar.sentimentBarRenderer.tooltip.split(' / ')[1] 
+            }
+            //Check if is Youtube Original
+            try{
+                if (typeof jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[0].videoPrimaryInfoRenderer.badges != 'undefined' && jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[0].videoPrimaryInfoRenderer.badges){//If it's Youtube Original : No view count
+                    ytr.views = ''
+            	}
+            }
+            catch(e){
+            	try{
+                    ytr.views = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[0].videoPrimaryInfoRenderer.viewCount.videoViewCountRenderer.viewCount.simpleText.split(' ')[0]
+            	}
+            	catch(e) {
+                    ytr.views = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[1].videoPrimaryInfoRenderer.viewCount.videoViewCountRenderer.viewCount.simpleText.split(' ')[0]
+            	}
             }
             try {
                 ytr.category = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[1].videoSecondaryInfoRenderer.metadataRowContainer.metadataRowContainerRenderer.rows[1].metadataRowRenderer.contents[0].runs[0].text
             } catch (e) {
-                ytr.category = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[1].videoSecondaryInfoRenderer.metadataRowContainer.metadataRowContainerRenderer.rows[0].metadataRowRenderer.contents[0].runs[0].text
+            	try{
+                    ytr.category = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[1].videoSecondaryInfoRenderer.metadataRowContainer.metadataRowContainerRenderer.rows[0].metadataRowRenderer.contents[0].runs[0].text
+            } catch (e) {//Requires another try if there is a shop in the description
+                    ytr.category = jsd[3].response.contents.twoColumnWatchNextResults.results.results.contents[2].videoSecondaryInfoRenderer.metadataRowContainer.metadataRowContainerRenderer.rows[0].metadataRowRenderer.contents[0].runs[0].text              
             }
-        });
+        }
+     });
 
     exports.isGettingVideoInfo = false;
     return ytr;
